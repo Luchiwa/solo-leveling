@@ -1,0 +1,14 @@
+@use 'base/reset' as *;
+@use 'abstracts/variables' as *;
+
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&display=swap');
+
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: 'Exo 2', sans-serif;
+  color: $text-color;
+  background-color: $primary-color;
+}
