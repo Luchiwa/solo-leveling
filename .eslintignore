@@ -1,0 +1,6 @@
+# Ignore le dossier 'node_modules'
+node_modules/
+
+# Ignore les fichiers de build
+dist/
+build/
