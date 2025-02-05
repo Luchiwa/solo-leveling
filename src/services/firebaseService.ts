@@ -1,4 +1,4 @@
-import { db } from "../firebase";
+import { db } from "../firebase/firebase";
 import { collection, addDoc, getDocs, updateDoc, doc, setDoc, getDoc } from "firebase/firestore";
 
 // Fonction pour récupérer toutes les tâches
