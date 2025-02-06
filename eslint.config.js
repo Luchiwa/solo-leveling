@@ -1,26 +1,37 @@
-import globals from "globals";
-import pluginJs from "@eslint/js";
-import tseslint from "typescript-eslint";
-import pluginReact from "eslint-plugin-react";
-import configPrettier from "eslint-config-prettier"; // Configuration Prettier
+import pluginJs from "@eslint/js"
+import react from "eslint-plugin-react"
+import globals from "globals"
+import tseslint from "typescript-eslint"
 
-/** @type {import('eslint').Linter.Config[]} */
+/** @type {import("eslint").Linter.Config} */
 export default [
-  {files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"]},
-  {languageOptions: { globals: globals.browser }},
-  pluginJs.configs.recommended,
-  ...tseslint.configs.recommended,
-  pluginReact.configs.flat.recommended,
   {
-    // Ajout de la configuration Prettier
-    extends: [
-      "plugin:prettier/recommended", // Active les règles Prettier
-      configPrettier, // Désactive les règles ESLint qui peuvent entrer en conflit avec Prettier
-    ],
-  },
-  {
-    rules: {
-      "prettier/prettier": ["error"], // Force l'application des règles Prettier
+    files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
+    languageOptions: { 
+      globals: globals.browser, 
+      parser: tseslint.parser,
+      parserOptions: {
+        'ecmaVersion': 12,
+        'sourceType': 'module',
+        'project': './tsconfig.app.json'
+      }, 
     },
+    plugins: {
+      "react": react,
+      "@typescript-eslint": tseslint.plugin
+    },
+    settings: {
+      react: {
+        version: "detect", // Ceci détecte automatiquement la version de React
+      },
+    },
+    rules: {
+      ...pluginJs.configs.recommended.rules,
+      ...tseslint.configs.recommended.rules,
+      ...react.configs.recommended.rules,
+      "react/display-name": "off",
+      "react/react-in-jsx-scope": "off",
+    },
+    ignores: ["node_modules", "dist", "build", "eslint.config.js"], // Remplace .eslintignore
   },
-];
+]

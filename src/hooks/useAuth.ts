@@ -1,26 +1,24 @@
-// src/hooks/useAuth.ts
-import { useState, useEffect } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-
-import { auth } from "../firebase/firebase";
+import { auth } from '@src/firebase/firebase'
+import { onAuthStateChanged } from 'firebase/auth'
+import { useEffect, useState } from 'react'
 
 export const useAuth = () => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setUser(user); // Si l'utilisateur est authentifié, on met à jour l'état
+        setUser(user) // Si l'utilisateur est authentifié, on met à jour l'état
       } else {
-        setUser(null); // Sinon, l'utilisateur est déconnecté
+        setUser(null) // Sinon, l'utilisateur est déconnecté
       }
-      setLoading(false); // L'état de chargement est terminé après la première vérification
-    });
+      setLoading(false) // L'état de chargement est terminé après la première vérification
+    })
 
     // Nettoyage de l'abonnement lors du démontage du composant
-    return () => unsubscribe();
-  }, []);
+    return () => unsubscribe()
+  }, [])
 
-  return { user, loading };
-};
+  return { user, loading }
+}
