@@ -1,0 +1,17 @@
+@use '@styles/abstracts/variables' as *;
+
+.status {
+  padding: 8px;
+  font-size: 1rem;
+  border-radius: 4px;
+  color: $text-color;
+  text-align: center;
+
+  &--success {
+    background-color: green;
+  }
+
+  &--error {
+    background-color: red;
+  }
+}
