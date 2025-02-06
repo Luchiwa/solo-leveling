@@ -1,16 +1,18 @@
 import { createUserWithEmailAndPassword, deleteUser, signOut } from 'firebase/auth'
-import { doc, setDoc } from 'firebase/firestore'
 
-import { auth, db } from '@src/firebase/firebase'
+import { createPlayer } from '@services/playerService'
+import { auth } from '@src/firebase/firebase'
 
-export const register = async (email: string, password: string, nickName: string) => {
+export const register = async (email: string, password: string, playerName: string) => {
   const userCredential = await createUserWithEmailAndPassword(auth, email, password)
   const user = userCredential.user
+
   try {
-    await setDoc(doc(db, 'users', user.uid), {
-      nickName: nickName,
-      email: email,
+    await createPlayer({
+      playerName,
+      email,
       uid: user.uid,
+      level: 0,
     })
   } catch (error) {
     // Si l'ajout à Firestore échoue, on supprime l'utilisateur créé
