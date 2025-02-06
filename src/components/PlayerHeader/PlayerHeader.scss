@@ -1,0 +1,40 @@
+@use '@styles/abstracts/variables' as *;
+
+.player-header {
+  background-color: $secondary-color;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  font-size: 2rem;
+  border-bottom: 2px solid $tertiary-color;
+  margin-bottom: 16px;
+  cursor: pointer;
+
+  &__player {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+
+    &--lvl {
+      font-size: 1rem;
+
+      strong {
+        margin-left: 8px;
+        font-size: 2rem;
+      }
+    }
+  }
+
+  &__settings {
+    display: none;
+
+    &--open {
+      margin-top: 8px;
+      display: flex;
+    }
+
+    &--logout {
+      margin-left: auto;
+    }
+  }
+}

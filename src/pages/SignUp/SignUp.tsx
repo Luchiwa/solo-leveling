@@ -12,7 +12,7 @@ import './SignUp.scss'
 const SignUp: React.FC = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [nickName, setNickName] = useState('')
+  const [playerName, setPlayerName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -23,7 +23,7 @@ const SignUp: React.FC = () => {
     setError('')
     setLoading(true)
     try {
-      const { user } = await register(email, password, nickName)
+      const { user } = await register(email, password, playerName)
       if (user) {
         navigate('/')
       }
@@ -41,23 +41,23 @@ const SignUp: React.FC = () => {
       <form className="signup__form" onSubmit={handleSubmit}>
         {error && <Status type="error" message={error} />}
         <InputText
-          name="nickName"
-          label="Pseudo"
-          value={nickName}
-          onChange={(e) => setNickName(e.target.value)}
+          name="playerName"
+          label="Nom du joueur"
+          value={playerName}
+          onChange={(e) => setPlayerName((e.target as HTMLInputElement).value)}
         />
         <InputText
           name="email"
           label="Email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => setEmail((e.target as HTMLInputElement).value)}
         />
         <InputText
           name="password"
           label="Mot de passe"
           type="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => setPassword((e.target as HTMLInputElement).value)}
         />
         {loading ? (
           <Loader />

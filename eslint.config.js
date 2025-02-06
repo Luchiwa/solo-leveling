@@ -32,6 +32,6 @@ export default [
       "react/display-name": "off",
       "react/react-in-jsx-scope": "off",
     },
-    ignores: ["node_modules", "dist", "build", "eslint.config.js"], // Remplace .eslintignore
+    ignores: ["node_modules", "dist", "build", "eslint.config.js", "vite.config.ts"], // Remplace .eslintignore
   },
 ]
