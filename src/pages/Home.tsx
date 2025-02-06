@@ -1,16 +1,15 @@
-// /src/pages/Home.tsx
-import { logout } from "../services/authService";
-import { useAuth } from "../hooks/useAuth";
+import React from 'react'
 
-import TaskList from "../components/TaskList";
+import TaskList from '@components/TaskList'
+import { useAuth } from '@hooks/useAuth'
+import { logout } from '@src/services/authService'
 
-const Home = () => {
-  const { user, loading } = useAuth();
+const Home: React.FC = () => {
+  const { user, loading } = useAuth()
 
-  console.log('user', user)
   const handleLogout = async () => {
-    await logout();
-  };
+    await logout()
+  }
 
   if (loading) return <p>Chargement en cours...</p>
 
@@ -21,7 +20,7 @@ const Home = () => {
       <TaskList />
       <button onClick={handleLogout}>Se déconnecter</button>
     </div>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home
