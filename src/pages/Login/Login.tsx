@@ -1,18 +1,18 @@
+import { signInWithEmailAndPassword } from 'firebase/auth'
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import InputText from '@components/Form/InputText'
 import Loader from '@components/Loader/Loader'
 import Status from '@components/Status/Status'
+import { auth } from '@src/firebase/firebase'
 import { getFirebaseErrorMessage } from '@src/firebase/firebaseErrors'
-import { register } from '@src/services/authService'
 
-import './SignUp.scss'
+import './Login.scss'
 
-const SignUp: React.FC = () => {
+const Login: React.FC = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [playerName, setPlayerName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -23,29 +23,25 @@ const SignUp: React.FC = () => {
     setError('')
     setLoading(true)
     try {
-      const { user } = await register(email, password, playerName)
+      const { user } = await signInWithEmailAndPassword(auth, email, password)
       if (user) {
         navigate('/')
       }
     } catch (err) {
-      const firebaseErrorCode = (err as any).code || 'unknown'
-      setError(getFirebaseErrorMessage(firebaseErrorCode))
+      if (err instanceof Error) {
+        const firebaseErrorCode = (err as any).code || 'unknown'
+        setError(getFirebaseErrorMessage(firebaseErrorCode))
+      }
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <section className="signup">
-      <h1>Inscription</h1>
-      <form className="signup__form" onSubmit={handleSubmit}>
+    <section className="login">
+      <h1>Connexion</h1>
+      <form className="login__form" onSubmit={handleSubmit}>
         {error && <Status type="error" message={error} />}
-        <InputText
-          name="playerName"
-          label="Nom du joueur"
-          value={playerName}
-          onChange={(e) => setPlayerName((e.target as HTMLInputElement).value)}
-        />
         <InputText
           name="email"
           label="Email"
@@ -67,9 +63,11 @@ const SignUp: React.FC = () => {
           </button>
         )}
       </form>
-      <Link to="/">Connectes-toi ici</Link>
+      <p>
+        Pas encore inscrit ? <Link to="/signup">Inscris-toi ici</Link>
+      </p>
     </section>
   )
 }
 
-export default SignUp
+export default Login
