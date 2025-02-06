@@ -1,15 +1,13 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom"
+import React from 'react'
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 
-import { useAuth } from "./hooks/useAuth"
+import { useAuth } from '@hooks/useAuth'
+import Auth from '@pages/Auth/Auth'
+import Home from '@pages/Home'
+import SignUp from '@src/pages/SignUp/SignUp'
 
-import Home from "./pages/Home"
-import Auth from "./pages/Auth/Auth"
-import SignUp from "./pages/SignUp"
-
-function App() {
-  const { user, loading } = useAuth()
-
-  if (loading) return <p>Chargement en cours...</p>
+const App: React.FC = () => {
+  const { user } = useAuth()
 
   return (
     <Router>

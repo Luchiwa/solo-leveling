@@ -3,5 +3,10 @@
   "singleQuote": true,
   "trailingComma": "es5",
   "tabWidth": 2,
-  "useTabs": false
+  "useTabs": false,
+  "printWidth": 100,
+  "bracketSameLine": true,
+  "endOfLine": "auto",
+  "arrowParens": "always",
+  "bracketSpacing": true
 }

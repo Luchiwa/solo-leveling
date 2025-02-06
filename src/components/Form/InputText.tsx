@@ -1,26 +1,30 @@
-import React from "react"
+import React from 'react'
+
+import './InputText.scss'
 
 interface InputTextProps {
-  type?: string,
-  label: string,
-  name: string,
+  type?: string
+  label: string
+  name: string
   placeholder?: string
   value: string
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onChange: (e: React.FormEvent) => void
 }
 
-const InputText: React.FC<InputTextProps> = ({ type = "text", placeholder = "", name, label, value, onChange }) => {
+const InputText: React.FC<InputTextProps> = ({
+  type = 'text',
+  placeholder = '',
+  name,
+  label,
+  value,
+  onChange,
+}) => {
   return (
-    <fieldset>
+    <div className="input-text">
+      <input name={name} type={type} placeholder={placeholder} value={value} onChange={onChange} />
       <label htmlFor={name}>{label}</label>
-      <input
-        className="input-text"
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-      />
-    </fieldset>
+      <span className="input-text__bar"></span>
+    </div>
   )
 }
 
