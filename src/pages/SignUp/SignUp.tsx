@@ -4,22 +4,47 @@ import { Link, useNavigate } from 'react-router-dom'
 import InputText from '@components/Form/InputText'
 import Loader from '@components/Loader/Loader'
 import Status from '@components/Status/Status'
+import { validateEmail, validatePassword, validatePlayerName } from '@helpers/validationHelper'
+import { register } from '@services/authService'
 import { getFirebaseErrorMessage } from '@src/firebase/firebaseErrors'
-import { register } from '@src/services/authService'
 
 import './SignUp.scss'
 
 const SignUp: React.FC = () => {
+  const navigate = useNavigate()
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [playerName, setPlayerName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [fieldsErrors, setFieldsErrors] = useState<{
+    playerName?: string
+    email?: string
+    password?: string
+  }>({})
 
-  const navigate = useNavigate()
+  const validateForm = () => {
+    const emailValidation = validateEmail(email)
+    const passwordValidation = validatePassword(password)
+    const playerNameValidation = validatePlayerName(playerName)
+
+    const newErrors: { playerName?: string; email?: string; password?: string } = {}
+
+    if (!playerNameValidation.valid) newErrors.playerName = playerNameValidation.error
+    if (!emailValidation.valid) newErrors.email = emailValidation.error
+    if (!passwordValidation.valid) newErrors.password = passwordValidation.error
+
+    setFieldsErrors(newErrors)
+
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!validateForm()) return
+
     setError('')
     setLoading(true)
     try {
@@ -44,12 +69,14 @@ const SignUp: React.FC = () => {
           name="playerName"
           label="Nom du joueur"
           value={playerName}
+          error={fieldsErrors.playerName}
           onChange={(e) => setPlayerName((e.target as HTMLInputElement).value)}
         />
         <InputText
           name="email"
           label="Email"
           value={email}
+          error={fieldsErrors.email}
           onChange={(e) => setEmail((e.target as HTMLInputElement).value)}
         />
         <InputText
@@ -57,6 +84,7 @@ const SignUp: React.FC = () => {
           label="Mot de passe"
           type="password"
           value={password}
+          error={fieldsErrors.password}
           onChange={(e) => setPassword((e.target as HTMLInputElement).value)}
         />
         {loading ? (
