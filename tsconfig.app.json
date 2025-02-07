@@ -30,6 +30,7 @@
       "@services/*": ["src/services/*"],
       "@components/*": ["src/components/*"],
       "@hooks/*": ["src/hooks/*"],
+      "@helpers/*": ["src/helpers/*"],
       "@pages/*": ["src/pages/*"],
       "@styles/*": ["src/assets/styles/*"]
     }

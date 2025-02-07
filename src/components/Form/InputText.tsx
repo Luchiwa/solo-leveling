@@ -8,6 +8,7 @@ interface InputTextProps {
   name: string
   placeholder?: string
   value: string
+  error?: string
   onChange: (e: React.FormEvent) => void
 }
 
@@ -17,14 +18,24 @@ const InputText: React.FC<InputTextProps> = ({
   name,
   label,
   value,
+  error,
   onChange,
 }) => {
   return (
-    <div className="input-text">
-      <input name={name} type={type} placeholder={placeholder} value={value} onChange={onChange} />
-      <label htmlFor={name}>{label}</label>
-      <span className="input-text__bar"></span>
-    </div>
+    <fieldset className="input-text">
+      <div className="input-text__input">
+        <input
+          name={name}
+          type={type}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+        />
+        <label htmlFor={name}>{label}</label>
+        <span className="input-text__input--bar"></span>
+      </div>
+      {error && <small className="input-text__error">{error}</small>}
+    </fieldset>
   )
 }
 
