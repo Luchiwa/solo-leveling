@@ -1,15 +1,9 @@
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
 
 import { db } from '@src/firebase/firebase'
+import type { Player } from '@src/types/player'
 
 const DOC_NAME = 'players'
-
-interface Player {
-  playerName: string
-  email: string
-  level: number
-  uid: string
-}
 
 export const createPlayer = async (player: Player) => {
   const playerRef = doc(db, DOC_NAME, player.uid)

@@ -1,10 +1,10 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
+import InProgressQuests from '@components/InProgressQuests/InProgressQuests'
 import Loader from '@components/Loader/Loader'
 import PlayerHeader from '@components/PlayerHeader/PlayerHeader'
 import Status from '@components/Status/Status'
-import TaskList from '@components/TaskList'
 import { usePlayerData } from '@hooks/usePlayerData'
 
 import './Home.scss'
@@ -19,9 +19,11 @@ const Home: React.FC = () => {
   return (
     <section className="home">
       <PlayerHeader />
-      <TaskList />
+      <InProgressQuests />
       <section className="home__footer">
-        <Link to="/add-quest">Ajoutes une quête</Link>
+        <Link className="primary-link" to="/add-quest">
+          Ajoutes une quête
+        </Link>
       </section>
     </section>
   )

@@ -37,6 +37,18 @@ h1 {
   cursor: pointer;
 }
 
+.primary-link {
+  background-color: $tertiary-color;
+  border: 2px solid $quinary-color;
+  color: $quinary-color;
+  padding: 16px;
+  font-size: 1rem;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
 a,
 a:visited {
   color: $senary-color;
