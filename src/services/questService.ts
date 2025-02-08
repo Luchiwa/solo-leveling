@@ -1,6 +1,5 @@
 //src/services/questService.ts
 import {
-  addDoc,
   collection,
   doc,
   getDoc,
@@ -13,37 +12,76 @@ import {
   where,
 } from 'firebase/firestore'
 
+import { updateCategoryXP } from '@services/categoryService'
 import { getPlayer, updatePlayer } from '@services/playerService'
 import { db } from '@src/firebase/firebase'
+import type { Category } from '@src/types/category'
 import { Quest, QUEST_STATUS, QuestDifficulty } from '@src/types/quest'
 import { updateXPAndLevel } from '@utils/levelSystem'
 
-const DOC_NAME = 'quests'
+const QUESTS_DOC_NAME = 'quests'
+const CATEGORIES_DOC_NAME = 'categories'
+const CACHE_EXPIRATION_TIME = 5 * 60 * 1000 // 5 minutes en millisecondes
+
+const categoryCache = new Map<string, string>()
+const cacheTimestamps = new Map<string, number>()
 
 export const addQuest = async (
   userId: string,
   title: string,
-  category: string,
+  categoryName: string,
   difficulty: QuestDifficulty
 ) => {
-  const newQuest: Quest = {
-    title,
-    category,
-    difficulty,
-    xp: difficulty, // XP = difficulté (1, 2, 3, 4)
-    status: QUEST_STATUS.IN_PROGRESS,
-    createdAt: Timestamp.now(),
-    userId,
-  }
+  return await runTransaction(db, async (transaction) => {
+    let categoryId = null
 
-  const questRef = await addDoc(collection(db, DOC_NAME), newQuest)
-  const newQuestSnap = await getDoc(doc(db, DOC_NAME, questRef.id))
+    // Vérifier si la catégorie existe déjà
+    const categoriesRef = collection(db, CATEGORIES_DOC_NAME)
+    const categoryQuery = query(
+      categoriesRef,
+      where('userId', '==', userId),
+      where('categoryName', '==', categoryName)
+    )
+    const categorySnapshot = await getDocs(categoryQuery)
 
-  return newQuestSnap.exists() ? { id: questRef.id, ...newQuestSnap.data() } : null
+    if (!categorySnapshot.empty) {
+      // La catégorie existe déjà, on récupère son ID
+      categoryId = categorySnapshot.docs[0].id
+    } else {
+      // La catégorie n'existe pas, on la crée dans la transaction
+      const newCategoryRef = doc(collection(db, CATEGORIES_DOC_NAME))
+      const newCategory: Category = {
+        categoryName,
+        level: 0,
+        xp: 0,
+        userId,
+        createdAt: Timestamp.now(),
+      }
+
+      transaction.set(newCategoryRef, newCategory)
+      categoryId = newCategoryRef.id
+    }
+
+    // Création de la quête avec `categoryId`
+    const questRef = doc(collection(db, QUESTS_DOC_NAME))
+    const newQuest: Quest = {
+      title,
+      categoryId,
+      difficulty,
+      xp: difficulty, // XP = difficulté (1, 2, 3, 4)
+      status: QUEST_STATUS.IN_PROGRESS,
+      createdAt: Timestamp.now(),
+      userId,
+    }
+
+    transaction.set(questRef, newQuest)
+
+    return { id: questRef.id, ...newQuest }
+  })
 }
 
 export const failQuest = async (questId: string) => {
-  const questRef = doc(db, DOC_NAME, questId)
+  const questRef = doc(db, QUESTS_DOC_NAME, questId)
   await updateDoc(questRef, {
     status: QUEST_STATUS.FAILED,
     completedAt: Timestamp.now(), // On peut garder une date d'échec
@@ -51,23 +89,11 @@ export const failQuest = async (questId: string) => {
 }
 
 export const abandonQuest = async (questId: string) => {
-  const questRef = doc(db, DOC_NAME, questId)
+  const questRef = doc(db, QUESTS_DOC_NAME, questId)
   await updateDoc(questRef, {
     status: QUEST_STATUS.ABANDONED,
     completedAt: Timestamp.now(), // Pour savoir quand elle a été abandonnée
   })
-}
-
-export const getInProgressQuests = async (userId: string) => {
-  const questsRef = collection(db, DOC_NAME)
-  const q = query(
-    questsRef,
-    where('userId', '==', userId),
-    where('status', '==', QUEST_STATUS.IN_PROGRESS)
-  )
-
-  const querySnapshot = await getDocs(q)
-  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Quest[]
 }
 
 export const listenToInProgressQuests = (
@@ -75,7 +101,7 @@ export const listenToInProgressQuests = (
   callback: (quests: Quest[]) => void,
   onError?: (error: string) => void
 ) => {
-  const questsRef = collection(db, DOC_NAME)
+  const questsRef = collection(db, QUESTS_DOC_NAME)
   const q = query(
     questsRef,
     where('userId', '==', userId),
@@ -84,11 +110,39 @@ export const listenToInProgressQuests = (
 
   return onSnapshot(
     q,
-    (snapshot) => {
-      const inProgressQuests: Quest[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Omit<Quest, 'id'>),
-      }))
+    async (snapshot) => {
+      const currentTime = Date.now()
+
+      const inProgressQuests = await Promise.all(
+        snapshot.docs.map(async (docSnapshot) => {
+          const quest = { id: docSnapshot.id, ...(docSnapshot.data() as Omit<Quest, 'id'>) }
+
+          let categoryName = ''
+          if (quest.categoryId) {
+            // Vérifier si la catégorie est en cache ET si elle est encore valide
+            if (
+              categoryCache.has(quest.categoryId) &&
+              cacheTimestamps.has(quest.categoryId) &&
+              currentTime - (cacheTimestamps.get(quest.categoryId) || 0) < CACHE_EXPIRATION_TIME
+            ) {
+              categoryName = categoryCache.get(quest.categoryId) as string
+            } else {
+              // La catégorie doit être rechargée depuis Firestore
+              const categoryRef = doc(db, CATEGORIES_DOC_NAME, quest.categoryId)
+              const categorySnap = await getDoc(categoryRef)
+
+              if (categorySnap.exists()) {
+                categoryName = categorySnap.data().categoryName
+                categoryCache.set(quest.categoryId, categoryName) // Mettre à jour le cache
+                cacheTimestamps.set(quest.categoryId, currentTime) // Mettre à jour le timestamp
+              }
+            }
+          }
+
+          return { ...quest, categoryName }
+        })
+      )
+
       callback(inProgressQuests)
     },
     (error) => {
@@ -99,7 +153,7 @@ export const listenToInProgressQuests = (
 }
 
 export const completeQuest = async (questId: string, userId: string) => {
-  const questRef = doc(db, DOC_NAME, questId)
+  const questRef = doc(db, QUESTS_DOC_NAME, questId)
 
   await runTransaction(db, async (transaction) => {
     // Récupérer la quête en base
@@ -129,5 +183,9 @@ export const completeQuest = async (questId: string, userId: string) => {
 
     // Mise à jour du joueur (XP et potentiellement niveau)
     await updatePlayer(userId, { experience: newExperience, level: newLevel })
+
+    if (questData.categoryId) {
+      await updateCategoryXP(questData.categoryId, questData.xp)
+    }
   })
 }

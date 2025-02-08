@@ -1,0 +1,78 @@
+@use '@styles/abstracts/variables' as *;
+
+.custom-select {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  font-size: 1rem;
+  cursor: pointer;
+
+  &__selected {
+    padding: 12px;
+    border: 2px solid $secondary-color;
+    border-radius: 8px;
+    background-color: transparent;
+    color: $text-color;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition:
+      border-color 0.3s ease,
+      background-color 0.3s ease;
+
+    &:hover {
+      border-color: $quinary-color;
+    }
+  }
+
+  &__arrow {
+    transition: transform 0.3s ease;
+    &::before {
+      content: '▼';
+      font-size: 0.8rem;
+      color: $text-color;
+    }
+    &.open {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__dropdown {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    width: 100%;
+    background: $secondary-color;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    z-index: 10;
+    animation: fadeIn 0.2s ease-in-out;
+  }
+
+  &__option {
+    padding: 10px;
+    transition: background 0.2s;
+    color: $text-color;
+
+    &:hover {
+      background: rgba($quinary-color, 0.2);
+    }
+
+    &.selected {
+      background: rgba($quinary-color, 0.5);
+    }
+  }
+}
+
+// Animation d'apparition du dropdown
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
