@@ -19,7 +19,9 @@ const Home: React.FC = () => {
   return (
     <section className="home">
       <PlayerHeader />
-      <InProgressQuests />
+      <section className="home__body">
+        <InProgressQuests />
+      </section>
       <section className="home__footer">
         <Link className="primary-link" to="/add-quest">
           Ajoutes une quête

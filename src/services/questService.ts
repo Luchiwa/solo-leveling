@@ -1,3 +1,4 @@
+//src/services/questService.ts
 import {
   addDoc,
   collection,
@@ -15,6 +16,7 @@ import {
 import { getPlayer, updatePlayer } from '@services/playerService'
 import { db } from '@src/firebase/firebase'
 import { Quest, QUEST_STATUS, QuestDifficulty } from '@src/types/quest'
+import { updateXPAndLevel } from '@utils/levelSystem'
 
 const DOC_NAME = 'quests'
 
@@ -68,7 +70,11 @@ export const getInProgressQuests = async (userId: string) => {
   return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Quest[]
 }
 
-export const listenToInProgressQuests = (userId: string, callback: (quests: Quest[]) => void) => {
+export const listenToInProgressQuests = (
+  userId: string,
+  callback: (quests: Quest[]) => void,
+  onError?: (error: string) => void
+) => {
   const questsRef = collection(db, DOC_NAME)
   const q = query(
     questsRef,
@@ -76,13 +82,20 @@ export const listenToInProgressQuests = (userId: string, callback: (quests: Ques
     where('status', '==', QUEST_STATUS.IN_PROGRESS)
   )
 
-  return onSnapshot(q, (snapshot) => {
-    const inProgressQuests: Quest[] = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...(doc.data() as Omit<Quest, 'id'>), // Cast propre pour éviter des erreurs TypeScript
-    }))
-    callback(inProgressQuests)
-  })
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const inProgressQuests: Quest[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<Quest, 'id'>),
+      }))
+      callback(inProgressQuests)
+    },
+    (error) => {
+      console.error('Erreur Firestore:', error)
+      onError?.('Impossible de récupérer les quêtes en cours.')
+    }
+  )
 }
 
 export const completeQuest = async (questId: string, userId: string) => {
@@ -106,15 +119,7 @@ export const completeQuest = async (questId: string, userId: string) => {
       throw new Error("Le joueur n'existe pas.")
     }
 
-    // Calculer le nouvel XP et niveau
-    const newExperience = player.experience + questData.xp
-    let newLevel = player.level
-    let requiredXp = newLevel + 1 // XP nécessaire pour passer au niveau suivant
-
-    while (newExperience >= requiredXp) {
-      newLevel++
-      requiredXp += newLevel + 1
-    }
+    const { newExperience, newLevel } = updateXPAndLevel(player.experience, questData.xp)
 
     // Mise à jour de la quête (terminée)
     transaction.update(questRef, {
