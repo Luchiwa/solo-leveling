@@ -2,6 +2,7 @@ import React from 'react'
 
 import Loader from '@components/Loader/Loader'
 import QuestListItem from '@components/QuestListItem/QuestListItem'
+import Status from '@components/Status/Status'
 import { useInProgressQuests } from '@hooks/useInProgressQuests'
 import { usePlayerData } from '@hooks/usePlayerData'
 
@@ -9,9 +10,11 @@ import './InProgressQuests.scss'
 
 const InProgressQuests: React.FC = () => {
   const { player } = usePlayerData()
-  const { quests, loading } = useInProgressQuests(player?.uid)
+  const { quests, loading, error } = useInProgressQuests(player?.uid)
 
   if (loading) return <Loader />
+
+  if (error) return <Status type="error" message={error} />
 
   return (
     <section className="in-progress-quests">

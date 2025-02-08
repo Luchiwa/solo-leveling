@@ -1,14 +1,17 @@
 @use '@styles/abstracts/variables' as *;
 
 .player-header {
+  position: absolute;
+  width: 100%;
   background-color: $secondary-color;
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  font-size: 2rem;
-  border-bottom: 2px solid $tertiary-color;
-  margin-bottom: 16px;
   cursor: pointer;
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    font-size: 2rem;
+  }
 
   &__player {
     display: flex;
@@ -25,16 +28,70 @@
     }
   }
 
-  &__settings {
-    display: none;
+  &__more {
+    max-height: 0;
+    margin-top: 0;
+    display: flex;
+    overflow: hidden;
+    transition:
+      max-height 0.3s ease-out,
+      opacity 0.3s ease-out,
+      margin-top 0.3s ease-out;
+    opacity: 0;
 
     &--open {
       margin-top: 8px;
-      display: flex;
+      max-height: 150px; // Ajuste la hauteur selon le contenu
+      opacity: 1;
     }
 
-    &--logout {
+    &--data {
+      font-size: 1rem;
+      color: $senary-color;
+    }
+
+    &--settings {
       margin-left: auto;
     }
+  }
+
+  &__progress-bar {
+    width: 100%;
+    overflow: hidden;
+    height: 4px;
+    background-color: $tertiary-color;
+
+    &--fill {
+      height: 100%;
+      background: $quaternary-color;
+      transition: width 0.5s ease-in-out;
+
+      &.player-header__progress-bar--maxed {
+        background: linear-gradient(90deg, $quinary-color, $senary-color, $quinary-color);
+        animation:
+          glow 1s infinite alternate,
+          pulse 1s infinite alternate;
+      }
+    }
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 5px $quinary-color;
+  }
+  to {
+    box-shadow:
+      0 0 15px $quinary-color,
+      0 0 25px $senary-color;
+  }
+}
+
+@keyframes pulse {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
   }
 }
