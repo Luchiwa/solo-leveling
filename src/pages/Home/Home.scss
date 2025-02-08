@@ -2,6 +2,11 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
+
+  &__body {
+    margin-top: calc(68px + 16px); //taille du header 66px + 16px de marge
+  }
 
   &__footer {
     margin: auto 0 16px;

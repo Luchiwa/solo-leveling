@@ -1,4 +1,5 @@
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
+//src/services/playerService.ts
+import { doc, getDoc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
 
 import { db } from '@src/firebase/firebase'
 import type { Player } from '@src/types/player'
@@ -24,4 +25,27 @@ export const getPlayer = async (uid: string): Promise<Player | null> => {
 export const updatePlayer = async (uid: string, updates: Partial<Player>) => {
   const playerRef = doc(db, DOC_NAME, uid)
   await updateDoc(playerRef, updates)
+}
+
+export const listenToPlayer = (
+  uid: string,
+  callback: (player: Player | null) => void,
+  onError?: (error: string) => void
+) => {
+  const playerRef = doc(db, DOC_NAME, uid)
+
+  return onSnapshot(
+    playerRef,
+    (snapshot) => {
+      if (snapshot.exists()) {
+        callback(snapshot.data() as Player)
+      } else {
+        callback(null)
+      }
+    },
+    (error) => {
+      console.error('Erreur Firestore:', error)
+      onError?.('Impossible de récupérer les données du joueur.')
+    }
+  )
 }
