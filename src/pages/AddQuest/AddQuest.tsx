@@ -1,8 +1,9 @@
 import classNames from 'classnames'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
-import InputText from '@components/Form/InputText'
+import InputText from '@components/Form/InputText/InputText'
+import Select from '@components/Form/Select/Select'
 import Loader from '@components/Loader/Loader'
 import Status from '@components/Status/Status'
 import {
@@ -11,6 +12,7 @@ import {
   validateQuestTitle,
 } from '@helpers/validationHelper'
 import { usePlayerData } from '@hooks/usePlayerData'
+import { getUserCategories } from '@services/categoryService'
 import { addQuest } from '@src/services/questService'
 import { QUEST_DIFFICULTY, QuestDifficulty } from '@src/types/quest'
 
@@ -21,25 +23,26 @@ const AddQuest: React.FC = () => {
   const navigate = useNavigate()
 
   const [title, setTitle] = useState('')
-  const [category, setCategory] = useState('')
+  const [categoryName, setCategoryName] = useState('')
   const [difficulty, setDifficulty] = useState<QuestDifficulty>(QUEST_DIFFICULTY.UNSET)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [fieldsErrors, setFieldsErrors] = useState<{
     title?: string
-    category?: string
+    categoryName?: string
     difficulty?: string
   }>({})
+  const [categories, setCategories] = useState<string[]>([])
 
   const validateForm = () => {
     const titleValidation = validateQuestTitle(title)
-    const categoryValidation = validateQuestCategory(category)
+    const categoryValidation = validateQuestCategory(categoryName)
     const difficultyValidation = validateQuestDifficulty(difficulty)
 
-    const newErrors: { title?: string; category?: string; difficulty?: string } = {}
+    const newErrors: { title?: string; categoryName?: string; difficulty?: string } = {}
 
     if (!titleValidation.valid) newErrors.title = titleValidation.error
-    if (!categoryValidation.valid) newErrors.category = categoryValidation.error
+    if (!categoryValidation.valid) newErrors.categoryName = categoryValidation.error
     if (!difficultyValidation.valid) newErrors.difficulty = difficultyValidation.error
 
     setFieldsErrors(newErrors)
@@ -60,7 +63,7 @@ const AddQuest: React.FC = () => {
     setLoading(true)
     try {
       if (player?.uid) {
-        const newQuest = await addQuest(player.uid, title, category, difficulty)
+        const newQuest = await addQuest(player.uid, title, categoryName, difficulty)
         if (newQuest) {
           navigate('/') // Redirection uniquement si la quête existe bien
         } else {
@@ -73,6 +76,19 @@ const AddQuest: React.FC = () => {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (!player?.uid) return
+
+    const fetchCategories = async () => {
+      setLoading(true)
+      const userCategories = await getUserCategories(player.uid)
+      setCategories(userCategories.map((cat) => cat.categoryName))
+      setLoading(false)
+    }
+
+    fetchCategories()
+  }, [player?.uid])
 
   return (
     <section className="add-quest">
@@ -89,10 +105,18 @@ const AddQuest: React.FC = () => {
         <InputText
           name="category"
           label="Catégorie"
-          value={category}
-          error={fieldsErrors.category}
-          onChange={(e) => setCategory((e.target as HTMLInputElement).value)}
+          value={categoryName}
+          error={fieldsErrors.categoryName}
+          onChange={(e) => setCategoryName((e.target as HTMLInputElement).value)}
         />
+        {categories.length > 0 && (
+          <Select
+            defaultOptionLabel="Catégories existantes"
+            options={categories}
+            value={categoryName}
+            onChange={(value: string) => setCategoryName(value)}
+          />
+        )}
         <section className="add-quest__difficulty">
           <p className="add-quest__difficulty--label">Difficulté</p>
           <section className="add-quest__difficulty--line">

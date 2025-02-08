@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
-import InputText from '@components/Form/InputText'
+import InputText from '@components/Form/InputText/InputText'
 import Loader from '@components/Loader/Loader'
 import Status from '@components/Status/Status'
 import { validateEmail, validatePassword, validatePlayerName } from '@helpers/validationHelper'
