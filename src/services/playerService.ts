@@ -4,15 +4,15 @@ import { doc, getDoc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
 import { db } from '@src/firebase/firebase'
 import type { Player } from '@src/types/player'
 
-const DOC_NAME = 'players'
+const PLAYERS_DOC_NAME = 'players'
 
 export const createPlayer = async (player: Player) => {
-  const playerRef = doc(db, DOC_NAME, player.uid)
+  const playerRef = doc(db, PLAYERS_DOC_NAME, player.uid)
   await setDoc(playerRef, player)
 }
 
 export const getPlayer = async (uid: string): Promise<Player | null> => {
-  const playerRef = doc(db, DOC_NAME, uid)
+  const playerRef = doc(db, PLAYERS_DOC_NAME, uid)
   const playerSnap = await getDoc(playerRef)
 
   if (playerSnap.exists()) {
@@ -23,7 +23,7 @@ export const getPlayer = async (uid: string): Promise<Player | null> => {
 }
 
 export const updatePlayer = async (uid: string, updates: Partial<Player>) => {
-  const playerRef = doc(db, DOC_NAME, uid)
+  const playerRef = doc(db, PLAYERS_DOC_NAME, uid)
   await updateDoc(playerRef, updates)
 }
 
@@ -32,7 +32,7 @@ export const listenToPlayer = (
   callback: (player: Player | null) => void,
   onError?: (error: string) => void
 ) => {
-  const playerRef = doc(db, DOC_NAME, uid)
+  const playerRef = doc(db, PLAYERS_DOC_NAME, uid)
 
   return onSnapshot(
     playerRef,
