@@ -6,24 +6,20 @@
   align-items: center;
 
   &__difficulty {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-
     &--easy {
-      background-color: green;
+      color: green;
     }
 
     &--medium {
-      background-color: yellow;
+      color: yellow;
     }
 
     &--difficult {
-      background-color: orange;
+      color: orange;
     }
 
     &--hard {
-      background-color: red;
+      color: red;
     }
   }
 

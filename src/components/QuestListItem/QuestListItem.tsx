@@ -12,7 +12,7 @@ interface QuestListItemProps {
 }
 
 const QuestListItem: React.FC<QuestListItemProps> = ({ quest }) => {
-  const { difficulty, category, title, id } = quest
+  const { difficulty, categoryName, title, id } = quest
 
   const { player } = usePlayerData()
 
@@ -54,16 +54,17 @@ const QuestListItem: React.FC<QuestListItemProps> = ({ quest }) => {
 
   return (
     <li className="quest-list-item">
-      <div
-        className={classNames('quest-list-item__difficulty', {
-          'quest-list-item__difficulty--easy': difficulty === QUEST_DIFFICULTY.EASY,
-          'quest-list-item__difficulty--medium': difficulty === QUEST_DIFFICULTY.MEDIUM,
-          'quest-list-item__difficulty--difficult': difficulty === QUEST_DIFFICULTY.DIFFICULT,
-          'quest-list-item__difficulty--hard': difficulty === QUEST_DIFFICULTY.HARD,
-        })}></div>
       <div className="quest-list-item__data">
-        <span className="quest-list-item__data--category">{category}</span>
-        <span className="quest-list-item__data--title">{title}</span>
+        <span className="quest-list-item__data--category">{categoryName}</span>
+        <span
+          className={classNames('quest-list-item__data--title', {
+            'quest-list-item__difficulty--easy': difficulty === QUEST_DIFFICULTY.EASY,
+            'quest-list-item__difficulty--medium': difficulty === QUEST_DIFFICULTY.MEDIUM,
+            'quest-list-item__difficulty--difficult': difficulty === QUEST_DIFFICULTY.DIFFICULT,
+            'quest-list-item__difficulty--hard': difficulty === QUEST_DIFFICULTY.HARD,
+          })}>
+          {title}
+        </span>
       </div>
       <div className="quest-list-item__tools">
         <button onClick={handleAbandon} className="quest-list-item__tools--abandon">
