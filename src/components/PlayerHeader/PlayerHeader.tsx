@@ -36,7 +36,7 @@ const PlayerHeader: React.FC = () => {
 
   if (!player) return null
 
-  const { level, playerName } = player
+  const { level, playerName, experience } = player
 
   return (
     <header className="player-header" onClick={handleOpenHeader}>
@@ -56,6 +56,7 @@ const PlayerHeader: React.FC = () => {
             <span>
               Lvl {level + 1} : {remainingXP}xp
             </span>
+            <span>{experience}xp</span>
           </section>
           <section className="player-header__more--settings">
             <button className="primary-button" onClick={handleLogout}>

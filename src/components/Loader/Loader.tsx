@@ -3,7 +3,12 @@ import React from 'react'
 import './Loader.scss'
 
 const Loader: React.FC = () => {
-  return <span className="loader"></span>
+  return (
+    <div className="loader-container">
+      <div className="loader-ring"></div>
+      <div className="loader-bar"></div>
+    </div>
+  )
 }
 
 export default Loader

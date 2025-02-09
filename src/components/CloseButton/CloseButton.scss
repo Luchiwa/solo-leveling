@@ -1,0 +1,49 @@
+@use '@styles/abstracts/variables' as *;
+
+.close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  border: 2px solid $quinary-color;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease-in-out,
+    transform 0.1s ease-in-out,
+    border 0.2s ease-in-out;
+  z-index: 10;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.6);
+    border-color: $senary-color;
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+
+  /* Nouvelle croix en CSS */
+  &::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 2px;
+    background-color: $senary-color;
+    transform: rotate(45deg);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 2px;
+    background-color: $senary-color;
+    transform: rotate(-45deg);
+  }
+}
