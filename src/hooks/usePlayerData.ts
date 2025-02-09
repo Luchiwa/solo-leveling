@@ -26,6 +26,11 @@ export const usePlayerData = () => {
     const unsubscribe = listenToPlayer(
       user.uid,
       (updatedPlayer) => {
+        if (!updatedPlayer) {
+          setError('Player data is null')
+          setLoading(false)
+          return
+        }
         const newLevel = calculateLevel(updatedPlayer.experience)
         if (
           !firstRender.current &&

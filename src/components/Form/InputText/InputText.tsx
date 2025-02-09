@@ -9,6 +9,7 @@ interface InputTextProps {
   placeholder?: string
   value: string
   error?: string
+  // eslint-disable-next-line no-unused-vars
   onChange: (e: React.FormEvent) => void
 }
 
