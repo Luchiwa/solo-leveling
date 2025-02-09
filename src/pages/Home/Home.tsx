@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 
-import InProgressQuests from '@components/InProgressQuests/InProgressQuests'
 import LevelUp from '@components/LevelUp/LevelUp'
 import Loader from '@components/Loader/Loader'
 import PlayerHeader from '@components/PlayerHeader/PlayerHeader'
+import AddQuest from '@components/Quests/AddQuest/AddQuest'
+import InProgressQuests from '@components/Quests/InProgressQuests/InProgressQuests'
 import Status from '@components/Status/Status'
 import { usePlayerData } from '@hooks/usePlayerData'
 
@@ -13,6 +13,7 @@ import './Home.scss'
 const Home: React.FC = () => {
   const { loading, error, levelUp } = usePlayerData()
 
+  const [isAddingQuest, setIsAddingQuest] = useState(false)
   const [showLevelUp, setShowLevelUp] = useState(false)
 
   useEffect(() => {
@@ -26,16 +27,19 @@ const Home: React.FC = () => {
   if (error) return <Status type="error" message={error} />
 
   return (
-    <section className="home">
+    <section className={`home ${isAddingQuest ? 'dimmed' : ''}`}>
       <PlayerHeader />
       <section className="home__body">
         <InProgressQuests />
       </section>
       <section className="home__footer">
-        <Link className="primary-link" to="/add-quest">
+        <button className="primary-link" onClick={() => setIsAddingQuest(true)}>
           Nouvelle quête
-        </Link>
+        </button>
       </section>
+      <div className={`quest-overlay ${isAddingQuest ? 'quest-overlay--open' : ''}`}>
+        <AddQuest onClose={() => setIsAddingQuest(false)} />
+      </div>
       {showLevelUp && <LevelUp onClose={() => setShowLevelUp(false)} />}
     </section>
   )
