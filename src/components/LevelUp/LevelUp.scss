@@ -1,0 +1,55 @@
+@use '@styles/abstracts/variables' as *;
+
+.level-up {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: $secondary-color;
+  text-align: center;
+  animation:
+    pop-in 0.5s ease-out forwards,
+    glow 1.5s infinite alternate;
+  padding: 16px;
+  border-radius: 12px;
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  &__title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: $quinary-color;
+  }
+
+  &__message {
+    font-size: 1.2rem;
+    color: $text-color;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 8px $senary-color;
+  }
+  to {
+    text-shadow:
+      0 0 15px $quinary-color,
+      0 0 25px $senary-color;
+  }
+}

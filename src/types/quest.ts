@@ -22,7 +22,7 @@ export type QuestDifficulty = (typeof QUEST_DIFFICULTY)[keyof typeof QUEST_DIFFI
 export interface Quest {
   id?: string
   title: string
-  category: string
+  categoryId: string
   difficulty: QuestDifficulty
   xp: number
   status: QuestStatus
