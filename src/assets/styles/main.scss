@@ -35,6 +35,11 @@ h1 {
   font-weight: 700;
   text-transform: uppercase;
   cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+
+  &:hover {
+    transform: scale(1.1);
+  }
 }
 
 .primary-link {
@@ -47,6 +52,11 @@ h1 {
   font-weight: 700;
   text-transform: uppercase;
   text-decoration: none;
+  transition: transform 0.2s ease-in-out;
+
+  &:hover {
+    transform: scale(1.1);
+  }
 }
 
 a,
