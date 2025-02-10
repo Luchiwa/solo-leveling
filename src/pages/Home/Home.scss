@@ -3,6 +3,11 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  transition: transform 0.3s ease-in-out;
+
+  &.dimmed {
+    transform: scale(0.97); // Légère réduction pour créer un effet de recul
+  }
 
   &__body {
     margin-top: calc(68px + 16px); //taille du header 66px + 16px de marge
@@ -12,5 +17,24 @@
     margin: auto 0 16px;
     display: flex;
     justify-content: center;
+  }
+}
+
+.quest-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  clip-path: circle(0% at 50% 90%);
+  transition: clip-path 0.5s ease-in-out;
+  z-index: 100;
+
+  &--open {
+    clip-path: circle(150% at 50% 50%);
   }
 }
