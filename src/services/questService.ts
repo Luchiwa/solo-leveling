@@ -16,7 +16,7 @@ import { updateCategoryXP } from '@services/categoryService'
 import { getPlayer, updatePlayer } from '@services/playerService'
 import { db } from '@src/firebase/firebase'
 import type { Category } from '@src/types/category'
-import { Quest, QUEST_STATUS, QuestDifficulty } from '@src/types/quest'
+import { Quest, QUEST_STATUS, QuestDifficulty, QuestDuraton } from '@src/types/quest'
 import { updateXPAndLevel } from '@utils/levelSystem'
 
 const QUESTS_DOC_NAME = 'quests'
@@ -30,10 +30,26 @@ export const addQuest = async (
   userId: string,
   title: string,
   categoryName: string,
-  difficulty: QuestDifficulty
+  difficulty: QuestDifficulty,
+  isTimed: boolean,
+  duration?: QuestDuraton
 ) => {
   return await runTransaction(db, async (transaction) => {
     let categoryId = null
+    let expiresAt: Timestamp | undefined = undefined
+
+    if (isTimed) {
+      if (!duration || (duration.days === 0 && duration.hours === 0 && duration.minutes === 0)) {
+        throw new Error('Une quête chronométrée doit avoir une durée valide (au moins 1 minute).')
+      }
+
+      const now = new Date()
+      now.setDate(now.getDate() + (duration?.days || 0))
+      now.setHours(now.getHours() + (duration?.hours || 0))
+      now.setMinutes(now.getMinutes() + (duration?.minutes || 0))
+
+      expiresAt = Timestamp.fromDate(now) // Conversion en Timestamp Firestore
+    }
 
     // Vérifier si la catégorie existe déjà
     const categoriesRef = collection(db, CATEGORIES_DOC_NAME)
@@ -72,6 +88,8 @@ export const addQuest = async (
       status: QUEST_STATUS.IN_PROGRESS,
       createdAt: Timestamp.now(),
       userId,
+      isTimed,
+      ...(isTimed ? { duration, expiresAt } : {}),
     }
 
     transaction.set(questRef, newQuest)
@@ -98,7 +116,9 @@ export const abandonQuest = async (questId: string) => {
 
 export const listenToInProgressQuests = (
   userId: string,
+  // eslint-disable-next-line no-unused-vars
   callback: (quests: Quest[]) => void,
+  // eslint-disable-next-line no-unused-vars
   onError?: (error: string) => void
 ) => {
   const questsRef = collection(db, QUESTS_DOC_NAME)
@@ -156,7 +176,6 @@ export const completeQuest = async (questId: string, userId: string) => {
   const questRef = doc(db, QUESTS_DOC_NAME, questId)
 
   await runTransaction(db, async (transaction) => {
-    // Récupérer la quête en base
     const questSnap = await transaction.get(questRef)
     if (!questSnap.exists()) {
       throw new Error("La quête n'existe pas.")
@@ -167,13 +186,19 @@ export const completeQuest = async (questId: string, userId: string) => {
       throw new Error("Cette quête n'est pas en cours.")
     }
 
+    let finalXP = questData.xp
+
+    if (questData.isTimed) {
+      finalXP *= 2
+    }
+
     // Récupérer les infos du joueur
     const player = await getPlayer(userId)
     if (!player) {
       throw new Error("Le joueur n'existe pas.")
     }
 
-    const { newExperience, newLevel } = updateXPAndLevel(player.experience, questData.xp)
+    const { newExperience, newLevel } = updateXPAndLevel(player.experience, finalXP)
 
     // Mise à jour de la quête (terminée)
     transaction.update(questRef, {
@@ -185,7 +210,7 @@ export const completeQuest = async (questId: string, userId: string) => {
     await updatePlayer(userId, { experience: newExperience, level: newLevel })
 
     if (questData.categoryId) {
-      await updateCategoryXP(questData.categoryId, questData.xp)
+      await updateCategoryXP(questData.categoryId, finalXP)
     }
   })
 }

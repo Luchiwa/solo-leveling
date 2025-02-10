@@ -7,6 +7,7 @@ interface SelectProps {
   defaultOptionLabel: string
   options: string[]
   value: string
+  // eslint-disable-next-line no-unused-vars
   onChange: (value: string) => void
 }
 

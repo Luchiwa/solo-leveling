@@ -19,6 +19,11 @@ export const QUEST_DIFFICULTY = {
 
 export type QuestDifficulty = (typeof QUEST_DIFFICULTY)[keyof typeof QUEST_DIFFICULTY]
 
+export interface QuestDuraton {
+  days: number
+  hours: number
+  minutes: number
+}
 export interface Quest {
   id?: string
   title: string
@@ -29,4 +34,7 @@ export interface Quest {
   createdAt: Timestamp
   completedAt?: Timestamp
   userId: string
+  isTimed?: boolean
+  duration?: QuestDuraton
+  expiresAt?: Timestamp
 }

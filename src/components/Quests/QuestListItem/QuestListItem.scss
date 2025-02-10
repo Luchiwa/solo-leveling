@@ -1,0 +1,118 @@
+@use '@styles/abstracts/variables' as *;
+
+.quest-list-item {
+  list-style: none;
+  padding: 16px;
+  border-bottom: 3px solid $secondary-color;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  transition: background-color 0.3s ease-in-out;
+  overflow: hidden;
+  position: relative;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &__content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+    color: white;
+    gap: 16px;
+  }
+
+  &__title {
+    flex-grow: 1;
+    text-align: left;
+    font-size: 1.1rem;
+  }
+
+  &__xp {
+    text-align: right;
+    font-size: 0.9rem;
+    color: $senary-color;
+  }
+
+  &__difficulty {
+    &--1 {
+      color: green;
+    }
+    &--2 {
+      color: yellow;
+    }
+    &--3 {
+      color: orange;
+    }
+    &--4 {
+      color: red;
+    }
+  }
+
+  &__category {
+    font-size: 0.9rem;
+    color: $quinary-color;
+    margin-bottom: 0;
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-5px);
+    transition:
+      opacity 0.3s ease,
+      transform 0.3s ease,
+      margin-bottom 0.3s ease,
+      max-height 0.3s ease;
+  }
+
+  &.open &__category {
+    opacity: 1;
+    transform: translateY(0);
+    margin-bottom: 8px;
+    max-height: 50px;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    margin-top: 0;
+    transition:
+      max-height 0.3s ease,
+      opacity 0.3s ease,
+      margin-top 0.3s ease;
+
+    &.open {
+      max-height: 50px;
+      opacity: 1;
+      margin-top: 16px;
+    }
+
+    &--abandon {
+      background-color: crimson;
+      color: white;
+      border: none;
+      padding: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    &--validate {
+      background-color: green;
+      color: white;
+      border: none;
+      padding: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+
+      &.disabled {
+        background-color: gray;
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+    }
+  }
+}

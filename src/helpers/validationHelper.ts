@@ -1,4 +1,4 @@
-import { QuestDifficulty } from '@src/types/quest'
+import { QuestDifficulty, QuestDuraton } from '@src/types/quest'
 
 type ValidationResult = { valid: boolean; error: string }
 
@@ -45,5 +45,13 @@ export const validateQuestCategory = (category: string): ValidationResult => {
 export const validateQuestDifficulty = (difficulty: QuestDifficulty): ValidationResult => {
   if (difficulty === 0) return createValidationResult('Difficulté requise')
 
+  return createValidationResult('')
+}
+
+export const validateTimedQuest = (isTimed: boolean, duration: QuestDuraton): ValidationResult => {
+  if (isTimed && duration.days === 0 && duration.hours === 0 && duration.minutes === 0)
+    return createValidationResult(
+      'Une quête chronométrée doit avoir une durée valide (au moins 1 minute).'
+    )
   return createValidationResult('')
 }

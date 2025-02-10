@@ -1,36 +1,46 @@
-import classNames from 'classnames'
 import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
 
+import CloseButton from '@components/CloseButton/CloseButton'
 import InputText from '@components/Form/InputText/InputText'
 import Select from '@components/Form/Select/Select'
 import Loader from '@components/Loader/Loader'
+import SelectQuestDifficulty from '@components/Quests/SelectQuestDifficulty/SelectQuestDifficulty'
 import Status from '@components/Status/Status'
 import {
   validateQuestCategory,
   validateQuestDifficulty,
   validateQuestTitle,
+  validateTimedQuest,
 } from '@helpers/validationHelper'
 import { usePlayerData } from '@hooks/usePlayerData'
 import { getUserCategories } from '@services/categoryService'
-import { addQuest } from '@src/services/questService'
+import { addQuest } from '@services/questService'
 import { QUEST_DIFFICULTY, QuestDifficulty } from '@src/types/quest'
 
+import InputDuration from '@src/components/Form/InputDuration/InputDuration'
+import Toggle from '@src/components/Form/Toggle/Toggle'
 import './AddQuest.scss'
 
-const AddQuest: React.FC = () => {
+interface AddQuestProps {
+  onClose: () => void
+}
+
+const AddQuest: React.FC<AddQuestProps> = ({ onClose }) => {
   const { player } = usePlayerData()
-  const navigate = useNavigate()
 
   const [title, setTitle] = useState('')
   const [categoryName, setCategoryName] = useState('')
   const [difficulty, setDifficulty] = useState<QuestDifficulty>(QUEST_DIFFICULTY.UNSET)
+  const [isTimed, setIsTimed] = useState(false)
+  const [duration, setDuration] = useState({ days: 0, hours: 0, minutes: 0 })
+
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [fieldsErrors, setFieldsErrors] = useState<{
     title?: string
     categoryName?: string
     difficulty?: string
+    timed?: string
   }>({})
   const [categories, setCategories] = useState<string[]>([])
 
@@ -38,20 +48,42 @@ const AddQuest: React.FC = () => {
     const titleValidation = validateQuestTitle(title)
     const categoryValidation = validateQuestCategory(categoryName)
     const difficultyValidation = validateQuestDifficulty(difficulty)
+    const timedValidation = validateTimedQuest(isTimed, duration)
 
-    const newErrors: { title?: string; categoryName?: string; difficulty?: string } = {}
+    const newErrors: {
+      title?: string
+      categoryName?: string
+      difficulty?: string
+      timed?: string
+    } = {}
 
     if (!titleValidation.valid) newErrors.title = titleValidation.error
     if (!categoryValidation.valid) newErrors.categoryName = categoryValidation.error
     if (!difficultyValidation.valid) newErrors.difficulty = difficultyValidation.error
+    if (!timedValidation.valid) newErrors.timed = timedValidation.error
 
     setFieldsErrors(newErrors)
 
     return Object.keys(newErrors).length === 0
   }
 
+  const resetForm = () => {
+    setTitle('')
+    setCategoryName('')
+    setDifficulty(QUEST_DIFFICULTY.UNSET)
+    setIsTimed(false)
+    setDuration({ days: 0, hours: 0, minutes: 0 })
+    setFieldsErrors({})
+    setError('')
+  }
+
   const handleDifficulty = (difficulty: QuestDifficulty) => {
     setDifficulty(difficulty)
+  }
+
+  const handleClose = () => {
+    onClose()
+    resetForm()
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,9 +95,16 @@ const AddQuest: React.FC = () => {
     setLoading(true)
     try {
       if (player?.uid) {
-        const newQuest = await addQuest(player.uid, title, categoryName, difficulty)
+        const newQuest = await addQuest(
+          player.uid,
+          title,
+          categoryName,
+          difficulty,
+          isTimed,
+          isTimed ? duration : undefined
+        )
         if (newQuest) {
-          navigate('/') // Redirection uniquement si la quête existe bien
+          handleClose()
         } else {
           setError('La quête n’a pas pu être enregistrée.')
         }
@@ -90,9 +129,13 @@ const AddQuest: React.FC = () => {
     fetchCategories()
   }, [player?.uid])
 
+  useEffect(() => {
+    if (!isTimed) setDuration({ days: 0, hours: 0, minutes: 0 })
+  }, [isTimed])
+
   return (
     <section className="add-quest">
-      <h1>Nouvelle quête</h1>
+      <CloseButton onClick={handleClose} />
       <form className="add-quest__form" onSubmit={handleSubmit}>
         {error && <Status type="error" message={error} />}
         <InputText
@@ -117,48 +160,15 @@ const AddQuest: React.FC = () => {
             onChange={(value: string) => setCategoryName(value)}
           />
         )}
-        <section className="add-quest__difficulty">
-          <p className="add-quest__difficulty--label">Difficulté</p>
-          <section className="add-quest__difficulty--line">
-            <button
-              type="button"
-              className={classNames('add-quest__difficulty--easy ', {
-                selected: difficulty === QUEST_DIFFICULTY.EASY,
-              })}
-              onClick={() => handleDifficulty(QUEST_DIFFICULTY.EASY)}>
-              Facile
-            </button>
-            <button
-              type="button"
-              className={classNames('add-quest__difficulty--medium ', {
-                selected: difficulty === QUEST_DIFFICULTY.MEDIUM,
-              })}
-              onClick={() => handleDifficulty(QUEST_DIFFICULTY.MEDIUM)}>
-              Moyen
-            </button>
-          </section>
-          <section className="add-quest__difficulty--line">
-            <button
-              type="button"
-              className={classNames('add-quest__difficulty--difficult ', {
-                selected: difficulty === QUEST_DIFFICULTY.DIFFICULT,
-              })}
-              onClick={() => handleDifficulty(QUEST_DIFFICULTY.DIFFICULT)}>
-              Difficile
-            </button>
-            <button
-              type="button"
-              className={classNames('add-quest__difficulty--hard ', {
-                selected: difficulty === QUEST_DIFFICULTY.HARD,
-              })}
-              onClick={() => handleDifficulty(QUEST_DIFFICULTY.HARD)}>
-              Epique
-            </button>
-          </section>
-          {fieldsErrors.difficulty && (
-            <small className="add-quest__difficulty--error">{fieldsErrors.difficulty}</small>
-          )}
-        </section>
+        <Toggle name="isTimed" checked={isTimed} onChange={setIsTimed} label="Quête chronométrée" />
+        {isTimed && (
+          <InputDuration value={duration} onChange={setDuration} error={fieldsErrors.timed} />
+        )}
+        <SelectQuestDifficulty
+          difficulty={difficulty}
+          handleDifficulty={handleDifficulty}
+          error={fieldsErrors.difficulty}
+        />
         {loading ? (
           <Loader />
         ) : (
@@ -167,7 +177,6 @@ const AddQuest: React.FC = () => {
           </button>
         )}
       </form>
-      <Link to="/">Retour</Link>
     </section>
   )
 }
