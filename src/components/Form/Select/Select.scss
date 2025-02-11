@@ -4,23 +4,24 @@
   position: relative;
   width: 100%;
   max-width: 300px;
+  box-sizing: border-box;
   font-size: 1rem;
   cursor: pointer;
 
   &__selected {
     padding: 12px;
     border: 2px solid $secondary-color;
-    border-radius: 8px;
     background-color: transparent;
     color: $text-color;
     display: flex;
     justify-content: space-between;
+    gap: 16px;
     align-items: center;
     transition:
       border-color 0.3s ease,
       background-color 0.3s ease;
 
-    &:hover {
+    &:active {
       border-color: $quinary-color;
     }
   }
@@ -39,28 +40,23 @@
 
   &__dropdown {
     position: absolute;
-    top: 110%;
+    top: calc(100% - 1px);
     left: 0;
     width: 100%;
     background: $secondary-color;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    border-radius: 0 0 8px 8px;
     overflow: hidden;
     z-index: 10;
     animation: fadeIn 0.2s ease-in-out;
   }
 
   &__option {
-    padding: 10px;
-    transition: background 0.2s;
+    padding: 10px 12px;
+    transition: background-color 0.2s;
     color: $text-color;
 
-    &:hover {
-      background: rgba($quinary-color, 0.2);
-    }
-
     &.selected {
-      background: rgba($quinary-color, 0.5);
+      background-color: rgba($quinary-color, 0.5);
     }
   }
 }
@@ -69,10 +65,8 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-5px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }

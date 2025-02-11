@@ -3,7 +3,6 @@
 .input-duration {
   display: flex;
   gap: 16px;
-  margin: 16px 0;
 
   &__field {
     display: flex;
@@ -33,5 +32,11 @@
         border-color: $quinary-color;
       }
     }
+  }
+
+  &__error {
+    margin-top: 4px;
+    font-size: 1rem;
+    color: $error-color;
   }
 }

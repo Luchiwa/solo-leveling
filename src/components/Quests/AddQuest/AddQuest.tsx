@@ -6,13 +6,13 @@ import Select from '@components/Form/Select/Select'
 import Loader from '@components/Loader/Loader'
 import SelectQuestDifficulty from '@components/Quests/SelectQuestDifficulty/SelectQuestDifficulty'
 import Status from '@components/Status/Status'
+import { usePlayerData } from '@context/PlayerProvider'
 import {
   validateQuestCategory,
   validateQuestDifficulty,
   validateQuestTitle,
   validateTimedQuest,
 } from '@helpers/validationHelper'
-import { usePlayerData } from '@hooks/usePlayerData'
 import { getUserCategories } from '@services/categoryService'
 import { addQuest } from '@services/questService'
 import { QUEST_DIFFICULTY, QuestDifficulty } from '@src/types/quest'
@@ -173,7 +173,7 @@ const AddQuest: React.FC<AddQuestProps> = ({ onClose }) => {
           <Loader />
         ) : (
           <button className="primary-button" type="submit">
-            Envoyer
+            Créer
           </button>
         )}
       </form>

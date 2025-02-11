@@ -28,44 +28,19 @@ h1 {
 }
 
 .primary-button {
-  background-color: $tertiary-color;
-  border: 2px solid $quinary-color;
-  color: $quinary-color;
-  padding: 16px;
-  font-size: 1rem;
+  border: none;
+  background-color: $quaternary-color;
+  color: $text-color;
+  padding: 10px 16px;
+  font-size: 14px;
   border-radius: 4px;
-  font-weight: 700;
+  font-weight: bold;
   text-transform: uppercase;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
 
   &:active {
     transform: scale(0.95);
-  }
-
-  &:hover {
-    transform: scale(1.1);
-  }
-}
-
-.primary-link {
-  background-color: $tertiary-color;
-  border: 2px solid $quinary-color;
-  color: $quinary-color;
-  padding: 16px;
-  font-size: 1rem;
-  border-radius: 4px;
-  font-weight: 700;
-  text-transform: uppercase;
-  text-decoration: none;
-  transition: transform 0.2s ease-in-out;
-
-  &:active {
-    transform: scale(0.95);
-  }
-
-  &:hover {
-    transform: scale(1.1);
   }
 }
 
