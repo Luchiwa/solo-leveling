@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 
-import { usePlayerData } from '@hooks/usePlayerData'
+import { usePlayerData } from '@context/PlayerProvider'
 
 import './LevelUp.scss'
 

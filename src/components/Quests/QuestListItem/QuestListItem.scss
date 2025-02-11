@@ -92,20 +92,10 @@
 
     &--abandon {
       background-color: crimson;
-      color: white;
-      border: none;
-      padding: 16px;
-      border-radius: 4px;
-      cursor: pointer;
     }
 
     &--validate {
       background-color: green;
-      color: white;
-      border: none;
-      padding: 16px;
-      border-radius: 4px;
-      cursor: pointer;
       transition: background-color 0.3s ease;
 
       &.disabled {

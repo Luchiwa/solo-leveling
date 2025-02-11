@@ -1,33 +1,44 @@
 //src/hooks/useInProgressQuests.ts
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-import { listenToInProgressQuests } from '@services/questService'
-import type { Quest } from '@src/types/quest'
+import { useAuth } from '@hooks/useAuth'
+import { getCategoryNameById } from '@services/categoryService'
+import { InProgressQuest, listenToInProgressQuests } from '@services/questService'
 
-export const useInProgressQuests = (userId?: string) => {
-  const [quests, setQuests] = useState<Quest[]>([])
+export const useInProgressQuests = () => {
+  const { userId } = useAuth()
+
+  const [quests, setQuests] = useState<InProgressQuest[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!userId) return
+    if (!userId) {
+      setLoading(false)
+      return
+    }
 
     setLoading(true)
-    const unsubscribe = listenToInProgressQuests(
-      userId,
-      (inProgressQuests) => {
-        setQuests(inProgressQuests)
-        setLoading(false)
-        setError(null) // Reset de l'erreur en cas de succès
-      },
-      (errorMessage) => {
-        setError(errorMessage)
-        setLoading(false)
+
+    const unsubscribe = listenToInProgressQuests(userId, async (fetchedQuests) => {
+      try {
+        // Utilisation directe de `getCategoryNameById`, qui gère déjà le cache
+        const questsWithCategories = await Promise.all(
+          fetchedQuests.map(async (quest) => ({
+            ...quest,
+            categoryName: await getCategoryNameById(quest.categoryId),
+          }))
+        )
+        setQuests(questsWithCategories)
+      } catch (err) {
+        setError('Erreur lors du chargement des quêtes.')
+        console.error(err)
       }
-    )
+      setLoading(false)
+    })
 
     return () => unsubscribe()
   }, [userId])
 
-  return { quests, loading, error }
+  return useMemo(() => ({ quests, loading, error }), [quests, loading, error])
 }

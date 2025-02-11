@@ -2,6 +2,6 @@ export interface Player {
   playerName: string
   email: string
   level: number
-  experience: number
+  xp: number
   uid: string
 }
