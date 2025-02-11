@@ -7,11 +7,13 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "delete-user": "npx tsx scripts/deleteUser.ts"
   },
   "dependencies": {
     "classnames": "^2.5.1",
     "firebase": "^11.2.0",
+    "firebase-admin": "^13.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.1.5"
@@ -33,6 +35,7 @@
     "globals": "^15.14.0",
     "prettier": "^3.4.2",
     "sass": "^1.83.4",
+    "ts-node": "^10.9.2",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.23.0",
     "vite": "^6.1.0"

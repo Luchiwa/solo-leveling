@@ -6,7 +6,7 @@ import PlayerHeader from '@components/PlayerHeader/PlayerHeader'
 import AddQuest from '@components/Quests/AddQuest/AddQuest'
 import InProgressQuests from '@components/Quests/InProgressQuests/InProgressQuests'
 import Status from '@components/Status/Status'
-import { usePlayerData } from '@hooks/usePlayerData'
+import { usePlayerData } from '@context/PlayerProvider'
 
 import './Home.scss'
 
@@ -33,7 +33,7 @@ const Home: React.FC = () => {
         <InProgressQuests />
       </section>
       <section className="home__footer">
-        <button className="primary-link" onClick={() => setIsAddingQuest(true)}>
+        <button className="primary-button" onClick={() => setIsAddingQuest(true)}>
           Nouvelle quête
         </button>
       </section>
