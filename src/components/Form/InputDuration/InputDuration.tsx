@@ -74,7 +74,7 @@ const InputDuration: React.FC<InputDurationProps> = ({ value, error, onChange })
           />
         </div>
       </div>
-      {error && <p>{error}</p>}
+      {error && <small className="input-duration__error">{error}</small>}
     </>
   )
 }

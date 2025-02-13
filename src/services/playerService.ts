@@ -5,6 +5,7 @@ import { db } from '@src/firebase/firebase'
 import type { Player } from '@src/types/player'
 
 const PLAYERS_DOC_NAME = 'players'
+let lastPlayerSnapshot: Player | null = null
 
 export const createPlayer = async (player: Player) => {
   const playerRef = doc(db, PLAYERS_DOC_NAME, player.uid)
@@ -29,18 +30,29 @@ export const updatePlayer = async (uid: string, updates: Partial<Player>) => {
 
 export const listenToPlayer = (
   uid: string,
-  // eslint-disable-next-line no-unused-vars
   callback: (player: Player | null) => void,
-  // eslint-disable-next-line no-unused-vars
   onError?: (error: string) => void
 ) => {
+  if (!uid) return () => {}
+
   const playerRef = doc(db, PLAYERS_DOC_NAME, uid)
 
   return onSnapshot(
     playerRef,
     (snapshot) => {
       if (snapshot.exists()) {
-        callback(snapshot.data() as Player)
+        const newPlayer = snapshot.data() as Player
+
+        if (
+          lastPlayerSnapshot &&
+          lastPlayerSnapshot.xp === newPlayer.xp &&
+          lastPlayerSnapshot.level === newPlayer.level
+        ) {
+          return
+        }
+
+        lastPlayerSnapshot = newPlayer
+        callback(newPlayer)
       } else {
         callback(null)
       }

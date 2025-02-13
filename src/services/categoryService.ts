@@ -16,6 +16,25 @@ import { calculateLevel } from '@utils/levelSystem'
 
 const CATEGORIES_DOC_NAME = 'categories'
 
+const categoryCache = new Map<string, string>()
+
+export const getCategoryNameById = async (categoryId: string): Promise<string> => {
+  if (categoryCache.has(categoryId)) {
+    return categoryCache.get(categoryId) as string
+  }
+
+  const q = query(collection(db, CATEGORIES_DOC_NAME), where('id', '==', categoryId))
+  const querySnapshot = await getDocs(q)
+
+  if (!querySnapshot.empty) {
+    const categoryName = querySnapshot.docs[0].data().categoryName
+    categoryCache.set(categoryId, categoryName)
+    return categoryName
+  }
+
+  return 'Inconnu'
+}
+
 export const addCategory = async (userId: string, categoryName: string) => {
   const newCategory: Category = {
     categoryName,
@@ -50,7 +69,7 @@ export const updateCategoryXP = async (categoryId: string, xpGained: number) => 
 
     const categoryData = categorySnap.data()
     const newExperience = categoryData.xp + xpGained
-    const newLevel = calculateLevel(newExperience) // 🔥 Même système de niveau que le joueur
+    const newLevel = calculateLevel(newExperience)
 
     transaction.update(categoryRef, { xp: newExperience, level: newLevel })
   })

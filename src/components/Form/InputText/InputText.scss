@@ -1,9 +1,9 @@
 @use '@styles/abstracts/variables' as *;
 
 .input-text {
-  margin-bottom: 24px;
   display: flex;
   flex-direction: column;
+  width: 100%;
 
   &__input {
     position: relative;
@@ -19,7 +19,7 @@
       transition: 0.1s ease-in-out;
       outline: none;
       box-sizing: border-box;
-      min-width: 220px;
+      width: 100%;
       text-align: left;
 
       &:not(:placeholder-shown) ~ label,

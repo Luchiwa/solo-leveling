@@ -5,12 +5,11 @@ import { auth } from '@src/firebase/firebase'
 
 interface AuthContextType {
   user: User | null
+  userId: string | null
   loading: boolean
 }
 
-// ✅ On initialise le contexte avec `undefined` pour éviter les erreurs
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
 interface AuthProviderProps {
   children: ReactNode
 }
@@ -28,7 +27,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => unsubscribe()
   }, [])
 
-  const value = useMemo(() => ({ user, loading }), [user, loading])
+  const userId = useMemo(() => user?.uid || null, [user])
+
+  const value = useMemo(() => ({ user, userId, loading }), [user, userId, loading])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
