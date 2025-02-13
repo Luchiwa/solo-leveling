@@ -2,7 +2,6 @@
 import {
   collection,
   doc,
-  getDoc,
   getDocs,
   onSnapshot,
   query,
@@ -16,15 +15,15 @@ import { updateCategoryXP } from '@services/categoryService'
 import { getPlayer, updatePlayer } from '@services/playerService'
 import { db } from '@src/firebase/firebase'
 import type { Category } from '@src/types/category'
+import { Player } from '@src/types/player'
 import { Quest, QUEST_STATUS, QuestDifficulty, QuestDuraton } from '@src/types/quest'
 import { updateXPAndLevel } from '@utils/levelSystem'
 
 const QUESTS_DOC_NAME = 'quests'
 const CATEGORIES_DOC_NAME = 'categories'
-const CACHE_EXPIRATION_TIME = 5 * 60 * 1000 // 5 minutes en millisecondes
+const PLAYERS_DOC_NAME = 'players'
 
-const categoryCache = new Map<string, string>()
-const cacheTimestamps = new Map<string, number>()
+export type InProgressQuest = Quest & { categoryName: string }
 
 export const addQuest = async (
   userId: string,
@@ -114,62 +113,25 @@ export const abandonQuest = async (questId: string) => {
   })
 }
 
-export const listenToInProgressQuests = (
-  userId: string,
-  // eslint-disable-next-line no-unused-vars
-  callback: (quests: Quest[]) => void,
-  // eslint-disable-next-line no-unused-vars
-  onError?: (error: string) => void
-) => {
-  const questsRef = collection(db, QUESTS_DOC_NAME)
+export const listenToInProgressQuests = (userId: string, callback: (quests: Quest[]) => void) => {
   const q = query(
-    questsRef,
+    collection(db, QUESTS_DOC_NAME),
     where('userId', '==', userId),
     where('status', '==', QUEST_STATUS.IN_PROGRESS)
   )
 
-  return onSnapshot(
-    q,
-    async (snapshot) => {
-      const currentTime = Date.now()
-
-      const inProgressQuests = await Promise.all(
-        snapshot.docs.map(async (docSnapshot) => {
-          const quest = { id: docSnapshot.id, ...(docSnapshot.data() as Omit<Quest, 'id'>) }
-
-          let categoryName = ''
-          if (quest.categoryId) {
-            // Vérifier si la catégorie est en cache ET si elle est encore valide
-            if (
-              categoryCache.has(quest.categoryId) &&
-              cacheTimestamps.has(quest.categoryId) &&
-              currentTime - (cacheTimestamps.get(quest.categoryId) || 0) < CACHE_EXPIRATION_TIME
-            ) {
-              categoryName = categoryCache.get(quest.categoryId) as string
-            } else {
-              // La catégorie doit être rechargée depuis Firestore
-              const categoryRef = doc(db, CATEGORIES_DOC_NAME, quest.categoryId)
-              const categorySnap = await getDoc(categoryRef)
-
-              if (categorySnap.exists()) {
-                categoryName = categorySnap.data().categoryName
-                categoryCache.set(quest.categoryId, categoryName) // Mettre à jour le cache
-                cacheTimestamps.set(quest.categoryId, currentTime) // Mettre à jour le timestamp
-              }
-            }
-          }
-
-          return { ...quest, categoryName }
-        })
-      )
-
-      callback(inProgressQuests)
-    },
-    (error) => {
-      console.error('Erreur Firestore:', error)
-      onError?.('Impossible de récupérer les quêtes en cours.')
-    }
-  )
+  return onSnapshot(q, async (querySnapshot) => {
+    const quests: Quest[] = (await Promise.all(
+      querySnapshot.docs.map(async (doc) => {
+        const data = doc.data() as Omit<Quest, 'id'>
+        return {
+          id: doc.id,
+          ...data,
+        }
+      })
+    )) as Quest[]
+    callback(quests)
+  })
 }
 
 export const completeQuest = async (questId: string, userId: string) => {
@@ -198,7 +160,7 @@ export const completeQuest = async (questId: string, userId: string) => {
       throw new Error("Le joueur n'existe pas.")
     }
 
-    const { newExperience, newLevel } = updateXPAndLevel(player.experience, finalXP)
+    const { newExperience, newLevel } = updateXPAndLevel(player.xp, finalXP)
 
     // Mise à jour de la quête (terminée)
     transaction.update(questRef, {
@@ -207,10 +169,114 @@ export const completeQuest = async (questId: string, userId: string) => {
     })
 
     // Mise à jour du joueur (XP et potentiellement niveau)
-    await updatePlayer(userId, { experience: newExperience, level: newLevel })
+    await updatePlayer(userId, { xp: newExperience, level: newLevel })
 
     if (questData.categoryId) {
       await updateCategoryXP(questData.categoryId, finalXP)
     }
   })
+}
+
+export const listenToQuest = (
+  questId: string,
+  playerId: string,
+  callback: (data: { quest: Quest; category: Category | null; player: Player }) => void,
+  onError?: (error: string) => void
+) => {
+  if (!questId || !playerId) return () => {}
+
+  const questRef = doc(db, QUESTS_DOC_NAME, questId)
+  const playerRef = doc(db, PLAYERS_DOC_NAME, playerId)
+
+  let unsubscribeQuest: (() => void) | null = null
+  let unsubscribePlayer: (() => void) | null = null
+  let unsubscribeCategory: (() => void) | null = null
+
+  let lastQuest: Quest | null = null
+  let lastPlayer: Player | null = null
+  let lastCategory: Category | null = null
+
+  unsubscribeQuest = onSnapshot(
+    questRef,
+    (questSnap) => {
+      if (!questSnap.exists()) {
+        onError?.('La quête spécifiée n’existe pas.')
+        return
+      }
+
+      const questData = questSnap.data() as Quest
+
+      // 🛑 Si la quête est complétée, on arrête toutes les écoutes
+      if (questData.status === QUEST_STATUS.COMPLETED) {
+        unsubscribeQuest?.()
+        unsubscribePlayer?.()
+        unsubscribeCategory?.()
+        callback({ quest: questData, category: lastCategory, player: lastPlayer! })
+        return
+      }
+
+      lastQuest = questData
+
+      // Lancer l'écoute du joueur en parallèle
+      if (!unsubscribePlayer) {
+        unsubscribePlayer = onSnapshot(
+          playerRef,
+          (playerSnap) => {
+            if (!playerSnap.exists()) {
+              onError?.('Le joueur spécifié n’existe pas.')
+              return
+            }
+
+            const playerData = playerSnap.data() as Player
+
+            // ⚡ Vérifier si les données du joueur ont réellement changé avant de mettre à jour
+            if (JSON.stringify(playerData) !== JSON.stringify(lastPlayer)) {
+              lastPlayer = playerData
+              callback({ quest: lastQuest!, category: lastCategory, player: playerData })
+            }
+          },
+          (error) => {
+            console.error('Erreur Firestore joueur:', error)
+            onError?.('Impossible de récupérer les informations du joueur.')
+          }
+        )
+      }
+
+      // Lancer l'écoute de la catégorie si elle existe
+      if (questData.categoryId && !unsubscribeCategory) {
+        const categoryRef = doc(db, CATEGORIES_DOC_NAME, questData.categoryId)
+        unsubscribeCategory = onSnapshot(
+          categoryRef,
+          (categorySnap) => {
+            if (!categorySnap.exists()) {
+              onError?.('La catégorie associée n’existe pas.')
+              return
+            }
+
+            const categoryData = categorySnap.data() as Category
+
+            // ⚡ Vérifier si les données de la catégorie ont réellement changé avant de mettre à jour
+            if (JSON.stringify(categoryData) !== JSON.stringify(lastCategory)) {
+              lastCategory = categoryData
+              callback({ quest: lastQuest!, category: categoryData, player: lastPlayer! })
+            }
+          },
+          (error) => {
+            console.error('Erreur Firestore catégorie:', error)
+            onError?.('Impossible de récupérer les informations de la catégorie.')
+          }
+        )
+      }
+    },
+    (error) => {
+      console.error('Erreur Firestore quête:', error)
+      onError?.('Impossible de récupérer les informations de la quête.')
+    }
+  )
+
+  return () => {
+    unsubscribeQuest?.()
+    unsubscribePlayer?.()
+    unsubscribeCategory?.()
+  }
 }

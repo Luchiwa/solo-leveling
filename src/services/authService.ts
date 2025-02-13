@@ -13,7 +13,7 @@ export const register = async (email: string, password: string, playerName: stri
       email,
       uid: user.uid,
       level: 0,
-      experience: 0,
+      xp: 0,
     })
   } catch (error) {
     // Si l'ajout à Firestore échoue, on supprime l'utilisateur créé

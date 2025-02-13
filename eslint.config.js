@@ -13,7 +13,7 @@ export default [
       parserOptions: {
         'ecmaVersion': 12,
         'sourceType': 'module',
-        'project': './tsconfig.app.json'
+        'project': './tsconfig.json'
       }, 
     },
     plugins: {
@@ -32,6 +32,6 @@ export default [
       "react/display-name": "off",
       "react/react-in-jsx-scope": "off",
     },
-    ignores: ["node_modules", "dist", "build", "eslint.config.js", "vite.config.ts"], // Remplace .eslintignore
+    ignores: ["node_modules", "scripts", "dist", "build", "eslint.config.js", "vite.config.ts"], // Remplace .eslintignore
   },
 ]
